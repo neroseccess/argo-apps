@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jenkins
+  namespace: argocd
+spec:
+  project: jenkins
+  source:
+    repoURL: https://neroseccess.github.io/jenkins-helm
+    chart: jenkins
+    targetRevision: 0.1.0
+    helm:
+      values: |
+        admin:
+          user: admin
+          password: "SetYourStrongPasswordHere"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ci-cd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
