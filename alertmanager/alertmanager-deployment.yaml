@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: alertmanager
   namespace: monitoring
+  labels:
+    app: alertmanager
 spec:
   replicas: 1
   selector:
@@ -15,28 +17,17 @@ spec:
     spec:
       containers:
         - name: alertmanager
-          image: prom/alertmanager:latest
+          image: prom/alertmanager:v0.28.0
           args:
             - "--config.file=/etc/alertmanager/alertmanager.yml"
+            - "--storage.path=/alertmanager"
           ports:
             - containerPort: 9093
           volumeMounts:
-            - name: alertmanager-config
+            - name: alertmanager-config-vol
               mountPath: /etc/alertmanager
+              readOnly: true
       volumes:
-        - name: alertmanager-config
-          configMap:
-            name: alertmanager-config
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: alertmanager
-  namespace: monitoring
-spec:
-  type: ClusterIP
-  selector:
-    app: alertmanager
-  ports:
-    - port: 9093
-      targetPort: 9093
+        - name: alertmanager-config-vol
+          secret:
+            secretName: alertmanager-secret
